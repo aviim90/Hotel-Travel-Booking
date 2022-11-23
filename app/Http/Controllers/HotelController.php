@@ -17,13 +17,27 @@ class HotelController extends Controller
     public function index(Request $request)
     {
         $countryId=$request->session()->get('filter_country_id', null);
+        $name=$request->session()->get('find_hotel', null);
+        $orderBy=$request->session()->get('order_by', 'price');
+        $dir=$request->session()->get('order_direction', 'ASC');
+
+        /*
         if($countryId){
             $hotels=Hotel::where('country_id',$countryId)->get();
         }
         else{
             $hotels=Hotel::all();
-        }
-        return view('hotels.index', ['hotels'=>$hotels, 'countries'=>Country::all(), 'filter_country_id'=>$countryId]);
+        }*/
+        $hotels=Hotel::filterByCountry(countryId:$countryId)->findByName($name)->orderBy($orderBy, $dir)->get();
+        return view('hotels.index', [
+            'hotels'=>$hotels,
+            'countries'=>Country::all(),
+            'filter_country_id'=>$countryId,
+            'findHotel'=>$name,
+            'orderBy'=>$orderBy,
+            'orderDirection'=>$dir
+        ]);
+
     }
 
     /**
@@ -44,7 +58,18 @@ class HotelController extends Controller
      */
     public function store(Request $request)
     {
-        Hotel::create($request->all());
+
+        $hotel=new Hotel();
+
+        if($request->file('image')!=null){
+            $photo=$request->file('image');
+            $photo_name=$hotel->id.'.'.$photo->extension();
+            $photo->storeAs('hotels',$photo_name);
+            $hotel->photo=$photo_name;
+
+        }
+        $hotel->fill($request->all());
+        $hotel->save();
         return redirect()->route('hotels.index');
     }
 
@@ -82,12 +107,14 @@ class HotelController extends Controller
      */
     public function update(Request $request, Hotel $hotel)
     {
+        if($request->file('image')!=null){
+            $photo=$request->file('image');
+            $photo_name=$hotel->id.'.'.$photo->extension();
+            $photo->storeAs('hotels',$photo_name);
+            $hotel->photo=$photo_name;
 
+        }
         $hotel->fill($request->all());
-        $photo=$request->file('image');
-        $photo_name=$hotel->id.'.'.$photo->extension();
-        $hotel->photo=$photo_name;
-        $photo->storeAs('public/hotels',$photo_name);
         $hotel->save();
         return redirect()->route('hotels.index');
     }
@@ -113,4 +140,27 @@ class HotelController extends Controller
         $request->session()->put('filter_country_id', $request->country_id);
         return redirect()->route('hotels.index');
     }
+
+    public function findHotels(Request $request){
+        $request->session()->put('find_hotel', $request->name);
+        return redirect()->route('hotels.index');
+    }
+
+    public function orderPrice(Request $request, $field){
+        if($request->session()->get('order_by')==$field){
+            $dir=$request->session()->get('order_direction', 'ASC');
+            if($dir=='ASC'){
+                $request->session()->put('order_direction','DESC');
+            }
+            else{
+                $request->session()->put('order_direction', 'ASC');
+            }
+        }
+        else{
+            $request->session()->put('order_direction','ASC');
+        }
+        $request->session()->put('order_by',$field);
+        return redirect()->route('hotels.index');
+    }
+
 }

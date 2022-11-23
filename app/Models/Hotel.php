@@ -14,4 +14,24 @@ class Hotel extends Model
     public function country(){
         return $this->belongsTo(Country::class);
     }
+
+    public function scopefilterByCountry($query, $countryId){
+        if($countryId){
+            return $query->where('country_id', $countryId);
+        }
+        else{
+            return $query;
+        }
+
+    }
+
+    public function scopefindByName($query, $name){
+        if($name){
+            return $query->where('name','like', "%$name%");
+        }
+        else{
+            return $query;
+        }
+
+    }
 }

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CountryController;
 use App\Http\Controllers\HotelController;
+use App\Http\Controllers\ImageController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -21,12 +22,18 @@ Route::get('/', function () {
 
 Auth::routes();
 Route::middleware(['auth','admin'])->group(function(){
-    Route::post('hotels/filter', [HotelController::class, 'filterHotels'])->name("hotels.filter");
+
     Route::resources([
         'countries'=> CountryController::class,
         'hotels'=> HotelController::class,
     ]);
+    Route::post('hotels/filter', [HotelController::class, 'filterHotels'])->name('hotels.filter');
+    Route::post('hotels/find', [HotelController::class, 'findHotels'])->name('hotels.find');
+
+    Route::get('hotels/order/{field}', [HotelController::class, 'orderPrice'])->name('price.order');
     Route::get('countries/{id}/hotels',[HotelController::class,'countryHotels'])->name('countryHotels');
+    Route::get('/image/{image_name}', [ImageController::class, 'display'])->name('image.display');
+
 });
 
 

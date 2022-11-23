@@ -10,7 +10,7 @@
                     <div class="card-body">
                         <a href="{{route('hotels.create')}}" class="btn btn-success">Add Hotel</a>
                         <hr>
-                        <h5>Hotel Filter</h5>
+                        <h5>Filter by Country</h5>
 
                         <form method="post" action="{{route('hotels.filter')}}">
                             @csrf
@@ -26,12 +26,25 @@
                             <button class="btn btn-success">Filter</button>
                         </form>
                         <hr>
+                        <h5>Find Hotel</h5>
+                        <form method="post" action="{{route('hotels.find')}}">
+                            @csrf
+                            <div class="mb-3">
+                                <label>Find by text:</label>
+                                <input class="form-control" name="name" type="text" value="{{$findHotel}}">
+                            </div>
+                            <button class="btn btn-success">Find</button>
+                        </form>
                         <table class="table">
                             <thead>
                             <tr>
                                 <th>Photo</th>
                                 <th>Name</th>
-                                <th>Price</th>
+                                <th><a href="{{route('price.order', 'price')}}"> Price
+                                        @if(isset($orderBy)&&$orderBy=='price')
+                                            {!!($orderDirection=='DESC')?'&uparrow;':'&downarrow;'!!}
+                                        @endif
+                                    </a></th>
                                 <th>Start</th>
                                 <th>End</th>
                                 <th>Country</th>
@@ -43,9 +56,7 @@
                             @foreach($hotels as $hotel)
                                 <tr>
                                     <td>
-                                        @if($hotel->photo!=null)
-                                        <img src="{{asset('storage/hotels/'.$hotel->photo)}}" style="width: 300px;">
-                                        @endif
+                                        <img src="{{route('image.display', $hotel->photo)}}" style="width: 300px;">
                                     </td>
                                     <td>{{$hotel->name}}</td>
                                     <td>{{$hotel->price}}</td>
